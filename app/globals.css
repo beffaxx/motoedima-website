@@ -3,16 +3,6 @@
 @import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  html, body {
-    @apply bg-background text-foreground;
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-}
 
 @theme inline {
   --color-sidebar-ring: var(--sidebar-ring);
