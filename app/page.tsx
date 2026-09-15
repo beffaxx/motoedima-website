@@ -414,7 +414,7 @@ function IntegratedHero() {
   const shrinkP = clamp(p / 0.22)
   const moveP = clamp((p - 0.22) / 0.23)
 
-  const width = `calc(100vw * ${(1 - shrinkP).toFixed(4)} + ${(240 * shrinkP).toFixed(2)}px)`
+const width = `calc(100vw * ${(1 - shrinkP).toFixed(4)} + ${(240 * shrinkP).toFixed(2)}px)`
   const height = `calc(100svh * ${(1 - shrinkP).toFixed(4)} + ${(240 * shrinkP).toFixed(2)}px)`
   const borderRadius = `${(shrinkP * 28).toFixed(1)}px`
   const translateY = -shrinkP * 180 + moveP * 60
