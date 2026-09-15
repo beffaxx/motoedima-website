@@ -9,9 +9,50 @@ import {
   type RefObject,
 } from "react"
 import Image from "next/image"
-import { Menu, X, ArrowRight, ArrowLeft, MapPin } from "lucide-react"
+import Link from "next/link"
+import { Menu, X, ArrowRight, MapPin, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+// ==========================================
+// COMPONENTE SKELETON
+// ==========================================
+function PageSkeleton() {
+  return (
+    <div className="min-h-screen bg-white animate-pulse">
+      {/* Skeleton Navbar */}
+      <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 sm:top-6">
+        <div className="h-14 w-full max-w-md rounded-full bg-gray-200 border border-gray-100 shadow-sm" />
+      </div>
+
+      {/* Skeleton Hero Section */}
+      <section className="flex h-screen w-full flex-col items-center justify-center bg-gray-100 px-6 relative">
+        <div className="space-y-4 text-center max-w-xl w-full flex flex-col items-center">
+          <div className="h-12 bg-gray-300 rounded-lg w-3/4"></div>
+          <div className="h-12 bg-gray-300 rounded-lg w-1/2"></div>
+        </div>
+
+        {/* Video Placeholder Container */}
+        <div className="mt-8 h-64 w-full max-w-3xl rounded-3xl bg-gray-300 shadow-inner"></div>
+
+        <div className="absolute bottom-6 h-4 w-16 bg-gray-300 rounded"></div>
+      </section>
+
+      {/* Skeleton Pillars Section */}
+      <section className="py-24 px-6 max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
+        <div className="aspect-square w-full bg-gray-200 rounded-2xl"></div>
+        <div className="space-y-6 flex flex-col justify-center">
+          <div className="h-10 bg-gray-300 rounded w-1/2"></div>
+          <div className="h-10 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-10 bg-gray-200 rounded w-1/3"></div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+// ==========================================
+// FUNZIONI UTILI E UTILITIES
+// ==========================================
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v))
 
 function useSectionProgress(ref: RefObject<HTMLElement | null>) {
@@ -129,84 +170,192 @@ function Reveal({
   )
 }
 
-const MENU = [
-  { label: "Home", href: "#home", img: "/191248-889684942_medium.mp4" },
-  { label: "Sicurezza", href: "#servizi", img: "/work-1.jpg" },
-  { label: "Tecnologia", href: "#servizi", img: "/truck-garage.png" },
-  { label: "Officina", href: "#recensioni", img: "/affidabilità.jpg" },
-  { label: "Approfondimenti", href: "#approfondimenti", img: "/unnamed.webp" },
-  { label: "Contatti", href: "#contatti", img: "/mtoos.webp" },
+const NAV_LINKS = [
+  { label: "Home", path: "/", targetId: "hero", img: "/work-1.jpg", isPage: true },
+  { label: "Servizi", path: "/#servizi", targetId: "servizi", img: "/laser.jpg", isPage: false },
+  { label: "Chi Siamo", path: "/chi-siamo", targetId: "", img: "/truck-garage.png", isPage: true },
+  { label: "Recensioni", path: "/#recensioni", targetId: "recensioni", img: "/affidabilità.jpg", isPage: false },
+  { label: "Approfondimenti", path: "/#approfondimenti", targetId: "approfondimenti", img: "/unnamed.webp", isPage: false },
+  { label: "Contatti", path: "/#contatti", targetId: "contatti", img: "/mtoos.webp", isPage: false },
 ]
 
-function Wordmark() {
+function LogoBadge({ onScrollToTarget }: { onScrollToTarget: () => void }) {
   return (
-    <span className="select-none text-[17px] font-bold tracking-tight text-foreground">
-      Moto <span className="text-brand font-semibold">&amp;</span> Dima
-    </span>
+    <button
+      type="button"
+      onClick={onScrollToTarget}
+      aria-label="Torna ad Home"
+      className="relative flex size-9 items-center justify-center overflow-hidden rounded-full transition-transform hover:scale-105 shrink-0 cursor-pointer"
+    >
+      <Image
+        src="/icon.svg"
+        alt="Logo Moto & Dima"
+        fill
+        className="object-cover"
+        priority
+      />
+    </button>
   )
 }
 
-function Navbar() {
+function Navbar({
+  activePath,
+  onNavigate,
+}: {
+  activePath: string
+  onNavigate: (link: (typeof NAV_LINKS)[number]) => void
+}) {
   const [open, setOpen] = useState(false)
+  const whatsappUrl = "https://api.whatsapp.com/send?phone=393426641738"
+
   return (
-    <header className="fixed inset-x-0 top-5 z-50 flex justify-center px-4 sm:top-6">
+    <header className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 sm:top-6">
       <nav
-        className="w-full max-w-lg rounded-[22px] border border-black/10 bg-white shadow-[0_14px_45px_-18px_rgba(0,0,0,0.38)]"
+        className="w-full max-w-sm sm:max-w-md md:max-w-fit rounded-3xl md:rounded-full bg-white/95 backdrop-blur-md border border-black/10 p-2.5 sm:px-4 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.2)] transition-all duration-300"
         aria-label="Primary"
       >
-        <div className="flex min-h-14 items-center gap-4 px-4 py-3 sm:px-5">
-          <Wordmark />
-          <span className="h-5 w-px bg-black/15" aria-hidden />
+        <div className="flex items-center justify-between gap-4 md:justify-start">
+          <LogoBadge onScrollToTarget={() => onNavigate({ label: "Home", path: "/home", targetId: "hero", img: "", isPage: false })} />
+
+          <div className="hidden items-center gap-6 md:flex px-2">
+            {NAV_LINKS.map((link) => {
+              const isActive = activePath === link.path
+              
+              if (link.isPage) {
+                return (
+                  <Link
+                    key={link.label}
+                    href={link.path}
+                    className={`text-sm font-medium transition-colors relative py-1 ${
+                      isActive ? "text-[#1f90cc] font-semibold" : "text-gray-700 hover:text-[#1f90cc]"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              }
+
+              return (
+                <button
+                  key={link.label}
+                  type="button"
+                  onClick={() => onNavigate(link)}
+                  className={`text-sm font-medium transition-colors relative py-1 cursor-pointer ${
+                    isActive
+                      ? "text-[#1f90cc] font-semibold"
+                      : "text-gray-700 hover:text-[#1f90cc]"
+                  }`}
+                >
+                  {link.label}
+                  {isActive && (
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 size-1 rounded-full bg-[#1f90cc]" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
           <a
-            href="#home"
-            className="rounded-full bg-black px-3 py-1.5 text-xs font-semibold text-white transition-transform hover:scale-[1.03]"
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center gap-1.5 rounded-full bg-[#1f90cc] px-4 py-1.5 text-xs font-semibold text-white transition-transform hover:scale-[1.03] hover:bg-[#197bb1]"
           >
-            Home
+            <Phone className="size-3" />
+            Chiama
           </a>
+
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? "Chiudi menu" : "Apri menu"}
-            className="ml-auto grid size-8 place-items-center rounded-full text-foreground transition-colors hover:bg-muted"
+            className="grid size-9 place-items-center rounded-full bg-gray-100 text-black transition-colors hover:bg-gray-200 md:hidden shrink-0 cursor-pointer"
           >
             {open ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
         </div>
 
         <div
-          className="grid overflow-hidden transition-[grid-template-rows] duration-400 ease-out"
+          className="grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out md:hidden"
           style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
         >
           <div className="min-h-0">
-            <div className="px-2 pb-2">
-              <p className="px-3 pb-1 pt-1 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            <div className="pt-4 px-1 pb-1">
+              <p className="pb-2 text-[11px] font-semibold uppercase tracking-widest text-gray-400">
                 Menu
               </p>
-              <ul>
-                {MENU.map((item) => (
-                  <li key={item.label}>
-                    <a
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="group flex items-center gap-3 rounded-xl px-3 py-1.5 transition-colors hover:bg-muted"
-                    >
-                      <span className="relative size-8 overflow-hidden rounded-md bg-muted">
-                        <Image
-                          src={item.img || "/placeholder.svg"}
-                          alt=""
-                          fill
-                          sizes="32px"
-                          className="object-cover"
-                        />
-                      </span>
-                      <span className="text-lg font-medium text-foreground transition-colors group-hover:text-brand">
-                        {item.label}
-                      </span>
-                    </a>
-                  </li>
-                ))}
+
+              <ul className="space-y-1">
+                {NAV_LINKS.map((item) => {
+                  const isActive = activePath === item.path
+
+                  if (item.isPage) {
+                    return (
+                      <li key={item.label}>
+                        <Link
+                          href={item.path}
+                          onClick={() => setOpen(false)}
+                          className="group flex w-full items-center gap-3 rounded-xl p-2 transition-colors hover:bg-gray-100"
+                        >
+                          <span className="relative size-9 overflow-hidden rounded-lg bg-gray-100 shrink-0">
+                            <Image src={item.img} alt="" fill sizes="36px" className="object-cover" />
+                          </span>
+                          <span className="text-base font-medium text-gray-900 group-hover:text-[#1f90cc]">
+                            {item.label}
+                          </span>
+                        </Link>
+                      </li>
+                    )
+                  }
+
+                  return (
+                    <li key={item.label}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOpen(false)
+                          onNavigate(item)
+                        }}
+                        className={`group flex w-full items-center gap-3 rounded-xl p-2 transition-colors cursor-pointer ${
+                          isActive ? "bg-[#1f90cc]/10" : "hover:bg-gray-100"
+                        }`}
+                      >
+                        <span className="relative size-9 overflow-hidden rounded-lg bg-gray-100 shrink-0">
+                          <Image
+                            src={item.img || "/placeholder.svg"}
+                            alt=""
+                            fill
+                            sizes="36px"
+                            className="object-cover"
+                          />
+                        </span>
+                        <span
+                          className={`text-base font-medium transition-colors ${
+                            isActive
+                              ? "text-[#1f90cc] font-semibold"
+                              : "text-gray-900 group-hover:text-[#1f90cc]"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </button>
+                    </li>
+                  )
+                })}
               </ul>
+
+              <div className="mt-4 pt-3 border-t border-gray-100">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1f90cc] py-3 text-xs font-semibold text-white transition-opacity active:scale-[0.98] hover:bg-[#197bb1]"
+                >
+                  <Phone className="size-4" />
+                  Chiama su WhatsApp
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -278,7 +427,7 @@ function IntegratedHero() {
   const shown2 = Math.max(0, shown - LINE1.length)
 
   return (
-    <section id="home" ref={ref} className="relative h-[220vh] bg-white">
+    <section id="hero" ref={ref} className="relative h-[220vh] bg-white">
       <div className="sticky top-0 flex h-[100svh] w-full items-center justify-center overflow-hidden bg-white">
         
         <div
@@ -386,52 +535,80 @@ const PILLARS = [
 
 function Pillars() {
   const [active, setActive] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return
+      
+      const rect = containerRef.current.getBoundingClientRect()
+      const totalHeight = rect.height - window.innerHeight
+      const currentScroll = -rect.top
+      const progress = Math.max(0, Math.min(1, currentScroll / totalHeight))
+      
+      if (progress < 0.33) {
+        setActive(0)
+      } else if (progress < 0.66) {
+        setActive(1)
+      } else {
+        setActive(2)
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
   return (
-    <section id="servizi" className="bg-white py-24 sm:py-32">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2">
-        <Reveal>
-          <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-xl">
-            <Parallax speed={0.12} className="absolute inset-x-0 -top-[12%] h-[124%]">
-              <Image
-                key={PILLARS[active].img}
-                src={PILLARS[active].img || "/placeholder.svg"}
-                alt={PILLARS[active].key}
-                fill
-                sizes="(min-width: 768px) 40vw, 90vw"
-                className="object-cover"
-                style={{ animation: "fadeimg 0.6s ease" }}
-              />
-            </Parallax>
-          </div>
-        </Reveal>
-        <div>
-          {PILLARS.map((p, i) => (
-            <div key={p.key} className="border-b border-gray-100 py-5 first:pt-0">
-              <button
-                type="button"
-                onMouseEnter={() => setActive(i)}
-                onFocus={() => setActive(i)}
-                onClick={() => setActive(i)}
-                className="block text-left"
-              >
-                <span
-                  className={`font-serif text-4xl transition-colors sm:text-5xl ${
-                    active === i ? "text-black" : "text-gray-300"
-                  }`}
-                >
-                  {p.key}
-                </span>
-              </button>
-              <div
-                className="grid overflow-hidden transition-[grid-template-rows] duration-500 ease-out"
-                style={{ gridTemplateRows: active === i ? "1fr" : "0fr" }}
-              >
-                <div className="min-h-0">
-                  <p className="max-w-md pt-3 leading-relaxed text-gray-600">{p.body}</p>
-                </div>
+    <section id="servizi" ref={containerRef} className="relative h-[300vh] bg-white">
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden py-12">
+        <div className="mx-auto grid max-w-6xl w-full items-center gap-12 px-6 md:grid-cols-2">
+          <div>
+            <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-xl">
+              <div className="absolute inset-x-0 -top-[12%] h-[124%]">
+                <Image
+                  key={PILLARS[active].img}
+                  src={PILLARS[active].img || "/placeholder.svg"}
+                  alt={PILLARS[active].key}
+                  fill
+                  sizes="(min-width: 768px) 40vw, 90vw"
+                  className="object-cover"
+                  style={{ animation: "fadeimg 0.6s ease" }}
+                />
               </div>
             </div>
-          ))}
+          </div>
+
+          <div>
+            {PILLARS.map((p, i) => (
+              <div key={p.key} className="border-b border-gray-100 py-5 first:pt-0">
+                <button
+                  type="button"
+                  onClick={() => setActive(i)}
+                  className="block text-left cursor-pointer"
+                >
+                  <span
+                    className={`font-serif text-4xl transition-colors duration-300 sm:text-5xl ${
+                      active === i ? "text-black" : "text-gray-300"
+                    }`}
+                  >
+                    {p.key}
+                  </span>
+                </button>
+                <div
+                  className="grid overflow-hidden transition-[grid-template-rows] duration-500 ease-out"
+                  style={{ gridTemplateRows: active === i ? "1fr" : "0fr" }}
+                >
+                  <div className="min-h-0">
+                    <p className="max-w-md pt-3 leading-relaxed text-gray-600">
+                      {p.body}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
     </section>
@@ -474,19 +651,18 @@ function Quote() {
             </div>
 
             <Button 
-  asChild
-  className="group mt-6 flex w-full cursor-pointer items-center justify-between rounded-xl border border-white/30 bg-white/10 px-5 py-3 font-medium text-white backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white hover:text-black hover:shadow-lg active:scale-[0.98]"
->
-  <a 
-    href="https://www.google.com/search?q=moto+e+dima+vallo+della+lucania&oq=moto+e+dima&gs_lcrp=EgZjaHJvbWUqCggAEAAY4wIYgAQyCggAEAAY4wIYgAQyDQgBEC4YrwEYxwEYgAQyBggCEEUYOTIICAMQABgWGB4yBwgEEAAY7wUyBggFEEUYPDIGCAYQRRg9MgYIBxBFGD3SAQgyNTUwajBqN6gCALACAA&sourceid=chrome&source=chrome.ob&ie=UTF-8#sv=CAESzQEKuQEStgEKd0FKaVQ0dElsandyODZxUi1EeXJ3dG8xUWpsTjlBejZONU1aMzZlMWh1VVg5bVpZSlRJb1VuQVRqXzl4TkdHTVdZNzJsbkdoM2lFckpUOHpkQUJxbk1FX09UQUhVU3VEbFd5NWZnT1RHaVd6a3lMREZvVXd3eUcwEhc0RXFaYXBPNUE1dmw3X1VQaWV6VC1BcxoiQURzcjlmU2dGbE1uS2tsRE9VS2w3VDQ5aWVsSHkySlRUQRIEODA1MRoBMyoAMAA4AUAAGAAg44OwwwxKAhAB" 
-    target="_blank" 
-    rel="noopener noreferrer"
-    className="flex w-full items-center justify-between"
-  >
-    <span className="text-left">Leggi tutte le recensioni</span>
-    <ArrowRight className="size-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
-  </a>
-</Button>
+              className="group mt-6 flex w-full cursor-pointer items-center justify-between rounded-xl border border-white/30 bg-white/10 px-5 py-3 font-medium text-white backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white hover:text-black hover:shadow-lg active:scale-[0.98]"
+            >
+              <a 
+                href="https://www.google.com/search?q=moto+e+dima+vallo+della+lucania" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex w-full items-center justify-between"
+              >
+                <span className="text-left">Leggi tutte le recensioni</span>
+                <ArrowRight className="size-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
+              </a>
+            </Button>
           </div>
         </Reveal>
       </div>
@@ -496,19 +672,22 @@ function Quote() {
 
 const INSIGHTS = [
   {
-    img: "/work-1.jpg",
-    tag: "Tecnologia & Telai",
-    title: "Come funziona il controllo laser del telaio a moto montata",
+    title: "Come funciona il controllo laser del telaio a moto montata",
+    slug: "riparazione-telai",
+    tag: "Tecnologia",
+    img: "/placeholder.svg",
   },
   {
-    img: "/work-2.jpg",
-    tag: "Dietro le Quinte",
-    title: "Rigenerazione e centratura cerchi: prima e dopo gli interventi",
+    title: "Importanza della misurazione della geometria",
+    slug: "misurazione-geometria",
+    tag: "Manutenzione",
+    img: "/placeholder.svg",
   },
   {
-    img: "/affidabilità.jpg",
-    tag: "Sicurezza",
-    title: "Saldature TIG su alluminio e acciaio: precisione al millimetro",
+    title: "Come preparare la moto per il tracciamento",
+    slug: "preparazione-moto",
+    tag: "Consigli",
+    img: "/placeholder.svg",
   },
 ]
 
@@ -529,47 +708,30 @@ function Insights() {
               </p>
             </Reveal>
           </div>
-          <div className="flex items-center gap-3">
-            <Button className="rounded-full bg-black text-white hover:bg-black/80">
-              Vedi tutti
-            </Button>
-            <button
-              type="button"
-              aria-label="Previous"
-              className="grid size-10 place-items-center rounded-full border border-gray-200 bg-white text-black transition-colors hover:bg-gray-50"
-            >
-              <ArrowLeft className="size-4" />
-            </button>
-            <button
-              type="button"
-              aria-label="Next"
-              className="grid size-10 place-items-center rounded-full border border-gray-200 bg-white text-black transition-colors hover:bg-gray-50"
-            >
-              <ArrowRight className="size-4" />
-            </button>
-          </div>
         </div>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {INSIGHTS.map((post, i) => (
             <Reveal key={post.title} delay={i * 0.08}>
-              <article className="group cursor-pointer">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
-                  <Image
-                    src={post.img || "/placeholder.svg"}
-                    alt={post.title}
-                    fill
-                    sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </div>
-                <p className="mt-4 text-xs font-medium uppercase tracking-widest text-black/60">
-                  {post.tag}
-                </p>
-                <h3 className="mt-2 text-pretty text-xl font-medium leading-snug text-black">
-                  {post.title}
-                </h3>
-              </article>
+              <Link href={`/approfondimenti/${post.slug}`} className="group block cursor-pointer">
+                <article>
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+                    <Image
+                      src={post.img || "/placeholder.svg"}
+                      alt={post.title}
+                      fill
+                      sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </div>
+                  <p className="mt-4 text-xs font-medium uppercase tracking-widest text-black/60">
+                    {post.tag}
+                  </p>
+                  <h3 className="mt-2 text-pretty text-xl font-medium leading-snug text-black group-hover:text-[#1f90cc] transition-colors">
+                    {post.title}
+                  </h3>
+                </article>
+              </Link>
             </Reveal>
           ))}
         </div>
@@ -577,14 +739,6 @@ function Insights() {
     </section>
   )
 }
-
-const FOOTER_NAV = [
-  { label: "Home", href: "#home" },
-  { label: "Servizi", href: "#servizi" },
-  { label: "Recensioni", href: "#recensioni" },
-  { label: "Approfondimenti", href: "#approfondimenti" },
-  { label: "Contatti", href: "#contatti" },
-]
 
 function IconFacebook() {
   return (
@@ -607,13 +761,14 @@ function IconWhatsApp() {
     </svg>
   )
 }
-const SOCIALars = [
+
+const SOCIALS = [
   { label: "Facebook", href: "#", Icon: IconFacebook },
   { label: "Instagram", href: "#", Icon: IconInstagram },
   { label: "WhatsApp", href: "https://api.whatsapp.com/send?phone=393426641738", Icon: IconWhatsApp },
 ]
 
-function FooterRoom() {
+function FooterRoom({ onNavigate }: { onNavigate: (link: (typeof NAV_LINKS)[number]) => void }) {
   return (
     <footer id="contatti" className="relative w-full overflow-hidden bg-[#121212] text-white border-t border-white/10 py-12">
       <div className="max-w-6xl mx-auto px-6 relative z-10">
@@ -628,14 +783,15 @@ function FooterRoom() {
           </div>
 
           <div className="flex flex-wrap items-center gap-6 text-sm">
-            {FOOTER_NAV.map((l) => (
-              <a
+            {NAV_LINKS.map((l) => (
+              <button
                 key={l.label}
-                href={l.href}
-                className="text-white/80 transition-colors hover:text-white"
+                type="button"
+                onClick={() => onNavigate(l)}
+                className="text-white/80 transition-colors hover:text-white cursor-pointer"
               >
                 {l.label}
-              </a>
+              </button>
             ))}
           </div>
         </div>
@@ -649,7 +805,7 @@ function FooterRoom() {
               rel="noopener noreferrer" 
               className="inline-flex items-start gap-2 text-white/80 transition-colors hover:text-white group"
             >
-              <MapPin className="size-4 text-brand shrink-0 mt-0.5 transition-transform group-hover:scale-110" />
+              <MapPin className="size-4 text-[#1f90cc] shrink-0 mt-0.5 transition-transform group-hover:scale-110" />
               <span>Via de Hippolytis, 114<br />Vallo della Lucania (SA)</span>
             </a>
           </div>
@@ -668,14 +824,14 @@ function FooterRoom() {
           <div>
             <p className="font-semibold text-white mb-2">Social</p>
             <div className="flex gap-3">
-              {SOCIALars.map(({ label, href, Icon }) => (
+              {SOCIALS.map(({ label, href, Icon }) => (
                 <a
                   key={label}
                   href={href}
                   target={href.startsWith("http") ? "_blank" : "_self"}
                   rel="noopener"
                   aria-label={label}
-                  className="grid size-9 place-items-center rounded-full bg-white/10 text-white transition-all duration-300 hover:scale-110 hover:bg-[#a10036]"
+                  className="grid size-9 place-items-center rounded-full bg-white/10 text-white transition-all duration-300 hover:scale-110 hover:bg-[#1f90cc]"
                 >
                   <Icon />
                 </a>
@@ -695,7 +851,94 @@ function FooterRoom() {
   )
 }
 
+// ==========================================
+// COMPONENTE PRINCIPALE (PAGE)
+// ==========================================
 export default function Page() {
+  const [activePath, setActivePath] = useState("/home")
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setActivePath(window.location.pathname === "/" ? "/home" : window.location.pathname)
+    }
+
+    // Simula o gestisce l'inizializzazione dei componenti della pagina
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 800) // Cambia o rimuovi il timer se usi chiamate API reali
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleNavigate = (link: (typeof NAV_LINKS)[number]) => {
+    setActivePath(link.path)
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", link.path)
+    }
+
+    if (link.targetId) {
+      if (link.targetId === "hero") {
+        window.scrollTo({ top: 0, behavior: "smooth" })
+      } else {
+        const el = document.getElementById(link.targetId)
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" })
+        }
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (loading) return
+
+    const handleScroll = () => {
+      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100
+      if (isAtBottom) {
+        if (activePath !== "/contatti") {
+          setActivePath("/contatti")
+          window.history.replaceState(null, "", "/contatti")
+        }
+        return
+      }
+
+      const internalSections = NAV_LINKS.filter((l) => !l.isPage && l.targetId).map((link) => ({
+        path: link.path,
+        targetId: link.targetId,
+        el: document.getElementById(link.targetId),
+      }))
+
+      const scrollPos = window.scrollY + window.innerHeight / 3
+
+      if (window.scrollY < window.innerHeight * 0.5) {
+        if (activePath !== "/home") {
+          setActivePath("/home")
+          window.history.replaceState(null, "", "/home")
+        }
+        return
+      }
+
+      for (let i = internalSections.length - 1; i >= 0; i--) {
+        const sec = internalSections[i]
+        if (sec.el && sec.el.offsetTop <= scrollPos) {
+          if (activePath !== sec.path) {
+            setActivePath(sec.path)
+            window.history.replaceState(null, "", sec.path)
+          }
+          break
+        }
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [activePath, loading])
+
+  // Ritorna lo skeleton durante la fase di loading
+  if (loading) {
+    return <PageSkeleton />
+  }
+
   return (
     <main className="bg-white">
       <style>{`
@@ -703,16 +946,13 @@ export default function Page() {
           scroll-behavior: smooth;
         }
         @keyframes fadeimg { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes bloom { 0%, 100% { opacity: .6; transform: scale(1) } 50% { opacity: .9; transform: scale(1.04) } }
       `}</style>
-      <Navbar />
-      
+      <Navbar activePath={activePath} onNavigate={handleNavigate} />
       <IntegratedHero />
-
       <Pillars />
       <Quote />
       <Insights />
-      <FooterRoom />
+      <FooterRoom onNavigate={handleNavigate} />
     </main>
   )
 }
