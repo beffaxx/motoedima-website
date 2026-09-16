@@ -51,7 +51,7 @@ const COLLAGE: Tile[] = [
 
 export default function OwnRoadSection() {
   return (
-    <section className="relative min-h-[90vh] overflow-hidden bg-white py-28 sm:py-36 flex items-center justify-center">
+    <section className="relative min-h-0 md:min-h-[90vh] overflow-hidden bg-white py-16 sm:py-24 md:py-36 flex items-center justify-center">
       {COLLAGE.map((tile, idx) => (
         <Parallax
           key={idx}

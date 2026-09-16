@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ArrowLeft, Share2, Menu, X, Phone, MapPin } from 'lucide-react'
+import { ArrowLeft, Share2, Menu, X, CheckCheck, Phone, MapPin } from 'lucide-react'
 
 /* ==========================================================================
    CONSTANTS & SOCIALS
@@ -80,6 +80,7 @@ function LogoBadge() {
         src="/icon.svg"
         alt="Logo Moto & Dima"
         fill
+        sizes="36px"
         className="object-cover"
         priority
       />
@@ -312,6 +313,44 @@ function FooterRoom() {
    ========================================================================== */
 
 export default function RiparazioneTelaiPage() {
+  const [copied, setCopied] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+
+  const handleCopyLink = async () => {
+    // Riproduce il suono da public/click.mp3
+    try {
+      const audio = new Audio('/click.mp3')
+      audio.volume = 0.5
+      await audio.play()
+    } catch (err) {
+      console.error('Errore riproduzione audio:', err)
+    }
+
+    // Copia il link e attiva l'animazione di entrata
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      
+      // Piccolo ritardo per applicare la classe di entrata
+      setTimeout(() => setIsVisible(true), 10)
+
+      // Avvia la chiusura automatica con animazione di uscita
+      setTimeout(() => {
+        handleCloseToast()
+      }, 3600)
+    } catch (err) {
+      console.error('Errore durante la copia del link:', err)
+    }
+  }
+
+  const handleCloseToast = () => {
+    setIsVisible(false)
+    // Aspetta la fine della transizione CSS (300ms) prima di smontare il componente
+    setTimeout(() => {
+      setCopied(false)
+    }, 300)
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans antialiased">
       <style>{`
@@ -326,72 +365,108 @@ export default function RiparazioneTelaiPage() {
       {/* Main Container */}
       <main className="max-w-4xl mx-auto px-6 pt-32 pb-20">
         {/* Top Actions */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 mb-12">
           <Link
             href="/approfondimenti"
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
+            className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-gray-600 hover:text-black transition-colors"
           >
-            <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full border border-gray-200 flex items-center justify-center">
               <ArrowLeft className="w-4 h-4" />
             </div>
             Tutti i Servizi
           </Link>
 
-          <button className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors">
-            <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
+          {/* Pulsante Condividi con funzione di copia e suono */}
+          <button
+            onClick={handleCopyLink}
+            className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-gray-600 hover:text-black transition-colors focus:outline-none"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full border border-gray-200 flex items-center justify-center">
               <Share2 className="w-4 h-4" />
             </div>
             Condividi
           </button>
         </div>
 
+        {/* Toast Notifica con animazione Entrata e Uscita */}
+        {copied && (
+          <div
+            className={`fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 flex items-center justify-between gap-4 w-[calc(100%-2.5rem)] sm:w-auto sm:max-w-md bg-[#eaf7f0] border border-[#d2f0e0] text-emerald-950 px-4 py-3.5 rounded-2xl shadow-lg transition-all duration-300 ease-in-out transform ${
+              isVisible
+                ? 'opacity-100 translate-y-0 scale-100'
+                : 'opacity-0 translate-y-4 scale-95 pointer-events-none'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm border border-emerald-100">
+                <CheckCheck className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="font-bold text-sm text-emerald-950 leading-snug">
+                  Link copiato!
+                </p>
+                <p className="text-xs text-emerald-700/80 mt-0.5 leading-snug">
+                  Il link della pagina è pronto da condividere.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleCloseToast}
+              className="p-1 rounded-lg text-emerald-700/60 hover:text-emerald-950 hover:bg-emerald-100/50 transition-colors shrink-0"
+              aria-label="Chiudi notifica"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Article Header */}
-        <header className="mb-12">
-          <p className="text-sm text-gray-500 font-mono mb-4">MOTO & DIMA — OFFICINA</p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.15] text-gray-950">
-            Riparazione e Raddrizzatura Telai Moto: Precisione Laser e Sicurezza Assoluta
-          </h1>
-        </header>
+<header className="mb-12">
+  <p className="text-sm text-gray-500 font-mono mb-4">MOTO & DIMA — OFFICINA</p>
+  <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.15] text-gray-950">
+    Riparazione e Raddrizzatura Telai Moto: Precisione Laser e Sicurezza Assoluta
+  </h1>
+</header>
 
-        <hr className="border-gray-100 my-10" />
+<hr className="border-gray-100 my-10" />
 
-        {/* Author / Metadata & Intro Section */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-12">
-          <div className="md:col-span-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center font-bold text-lg">
-              M
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Servizio a cura di</p>
-              <p className="text-sm font-semibold text-gray-900">Moto & Dima</p>
-            </div>
-          </div>
+{/* Author / Metadata & Intro Section */}
+<div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-12">
+  <div className="md:col-span-3 flex items-center gap-3 self-start">
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+      <img src="/icon.svg" alt="Logo" className="w-full h-full object-contain" />
+    </div>
+    <div>
+      <p className="text-xs text-gray-500">Servizio a cura di</p>
+      <p className="text-sm font-semibold text-gray-900">Moto & Dima</p>
+    </div>
+  </div>
 
-          <div className="md:col-span-9 space-y-6 text-lg text-gray-700 leading-relaxed">
-            <p className="font-medium text-gray-900 leading-relaxed">
-              Garantire l&apos;allineamento perfetto del telaio è fondamentale per la stabilità, la precisione d&apos;inserimento in curva e la sicurezza totale su strada e pista. Presso la nostra officina a Vallo della Lucania, combiniamo sistemi di misurazione laser avanzati e banchi dime di alta precisione.
-            </p>
-            <p>
-              A seguito di un impatto, una caduta o per un semplice controllo strutturale, effettuiamo verifiche millimetriche delle geometrie originali del costruttore. Ogni nostro intervento garantisce il pieno ripristino delle rigidità strutturali e delle caratteristiche dinamiche ideali della moto.
-            </p>
-          </div>
-        </div>
+  <div className="md:col-span-9 space-y-6 text-lg text-gray-700 leading-relaxed">
+    <p className="font-medium text-gray-900 leading-relaxed">
+      Garantire l&apos;allineamento perfetto del telaio è fondamentale per la stabilità, la precisione d&apos;inserimento in curva e la sicurezza totale su strada e pista. Presso la nostra officina a Vallo della Lucania, combiniamo sistemi di misurazione laser avanzati e banchi dime di alta precisione.
+    </p>
+    <p>
+      A seguito di un impatto, una caduta o per un semplice controllo strutturale, effettuiamo verifiche millimetriche delle geometrie originali del costruttore. Ogni nostro intervento garantisce il pieno ripristino delle rigidità strutturali e delle caratteristiche dinamiche ideali della moto.
+    </p>
+  </div>
+</div>
 
-        {/* Main Asset Section (Foto al posto del Video) */}
-        <section className="my-12">
-          <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-gray-900 shadow-lg">
-            <Image
-              src="/truck-garage.png"
-              alt="Verifica e raddrizzatura telaio su banco dime presso Moto & Dima"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-          <p className="text-xs text-gray-500 mt-3 text-center">
-            Processo di verifica e allineamento millimetrico della struttura su banco dime digitale presso la nostra officina a Vallo della Lucania.
-          </p>
-        </section>
+{/* Main Asset Section (Foto al posto del Video) */}
+<section className="my-12">
+  <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-gray-900 shadow-lg">
+    <Image
+      src="/placeholder.svg"
+      alt="Verifica e raddrizzatura telaio su banco dime presso Moto & Dima"
+      fill
+      className="object-cover"
+      priority
+    />
+  </div>
+  <p className="text-xs text-gray-500 mt-3 text-center">
+    Processo di verifica e allineamento millimetrico della struttura su banco dime digitale presso la nostra officina a Vallo della Lucania.
+  </p>
+</section>
 
         {/* Content Paragraph */}
         <section className="max-w-2xl mx-auto my-12 text-lg text-gray-700 leading-relaxed space-y-6">
@@ -406,7 +481,7 @@ export default function RiparazioneTelaiPage() {
             <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
               <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-gray-200 mb-3">
                 <Image
-                  src="/work-1.jpg"
+                  src="/placeholder.svg"
                   alt="Diagnostica e Misurazione Laser Telaio"
                   fill
                   className="object-cover"
@@ -420,7 +495,7 @@ export default function RiparazioneTelaiPage() {
             <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
               <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-gray-200 mb-3">
                 <Image
-                  src="/mtoos.webp"
+                  src="/placeholder.svg"
                   alt="Raddrizzatura e Calibrazione Finale Telaio"
                   fill
                   className="object-cover"

@@ -5,8 +5,9 @@ import SmoothScroll from './SmoothScroll'
 
 export const metadata: Metadata = {
   title: 'Moto e Dima - Officina',
-  description: 'Officina specializzata in riparazione, manutenzione e ripristino dima per moto. Passione, precisione e cura per la sicurezza della tua due ruote.',
-  generator: 'v0.app',
+  description:
+    'Officina specializzata in riparazione, manutenzione e ripristino dima per moto. Passione, precisione e cura per la sicurezza della tua due ruote.',
+  generator: 'v0.dev',
   icons: {
     icon: [
       {
@@ -27,10 +28,12 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
   ],
 }
 
@@ -40,11 +43,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="it">
+    <html lang="it" suppressHydrationWarning>
       <body className="antialiased">
-        <SmoothScroll>
-          {children}
-        </SmoothScroll>
+        <SmoothScroll>{children}</SmoothScroll>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

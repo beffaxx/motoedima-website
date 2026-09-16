@@ -19,25 +19,19 @@ import { Button } from "@/components/ui/button"
 function PageSkeleton() {
   return (
     <div className="min-h-screen bg-white animate-pulse">
-      {/* Skeleton Navbar */}
       <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 sm:top-6">
         <div className="h-14 w-full max-w-md rounded-full bg-gray-200 border border-gray-100 shadow-sm" />
       </div>
 
-      {/* Skeleton Hero Section */}
       <section className="flex h-screen w-full flex-col items-center justify-center bg-gray-100 px-6 relative">
         <div className="space-y-4 text-center max-w-xl w-full flex flex-col items-center">
           <div className="h-12 bg-gray-300 rounded-lg w-3/4"></div>
           <div className="h-12 bg-gray-300 rounded-lg w-1/2"></div>
         </div>
-
-        {/* Video Placeholder Container */}
         <div className="mt-8 h-64 w-full max-w-3xl rounded-3xl bg-gray-300 shadow-inner"></div>
-
         <div className="absolute bottom-6 h-4 w-16 bg-gray-300 rounded"></div>
       </section>
 
-      {/* Skeleton Pillars Section */}
       <section className="py-24 px-6 max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
         <div className="aspect-square w-full bg-gray-200 rounded-2xl"></div>
         <div className="space-y-6 flex flex-col justify-center">
@@ -51,7 +45,7 @@ function PageSkeleton() {
 }
 
 // ==========================================
-// FUNZIONI UTILI E UTILITIES
+// UTILITIES
 // ==========================================
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v))
 
@@ -98,8 +92,8 @@ function Parallax({
     const el = ref.current
     if (!el) return
     let raf = 0
-    const documentTop = el.getBoundingClientRect().top + window.scrollY
     const update = () => {
+      const documentTop = el.getBoundingClientRect().top + window.scrollY
       const fromCentre =
         documentTop - window.scrollY + el.offsetHeight / 2 - window.innerHeight / 2
       setStyle({
@@ -220,7 +214,6 @@ function Navbar({
           <div className="hidden items-center gap-6 md:flex px-2">
             {NAV_LINKS.map((link) => {
               const isActive = activePath === link.path
-              
               if (link.isPage) {
                 return (
                   <Link
@@ -234,16 +227,13 @@ function Navbar({
                   </Link>
                 )
               }
-
               return (
                 <button
                   key={link.label}
                   type="button"
                   onClick={() => onNavigate(link)}
                   className={`text-sm font-medium transition-colors relative py-1 cursor-pointer ${
-                    isActive
-                      ? "text-[#1f90cc] font-semibold"
-                      : "text-gray-700 hover:text-[#1f90cc]"
+                    isActive ? "text-[#1f90cc] font-semibold" : "text-gray-700 hover:text-[#1f90cc]"
                   }`}
                 >
                   {link.label}
@@ -285,11 +275,9 @@ function Navbar({
               <p className="pb-2 text-[11px] font-semibold uppercase tracking-widest text-gray-400">
                 Menu
               </p>
-
               <ul className="space-y-1">
                 {NAV_LINKS.map((item) => {
                   const isActive = activePath === item.path
-
                   if (item.isPage) {
                     return (
                       <li key={item.label}>
@@ -308,7 +296,6 @@ function Navbar({
                       </li>
                     )
                   }
-
                   return (
                     <li key={item.label}>
                       <button
@@ -396,6 +383,14 @@ function IntegratedHero() {
   const ref = useRef<HTMLElement>(null)
   const p = useSectionProgress(ref)
   const [typed, setTyped] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>
@@ -417,24 +412,31 @@ function IntegratedHero() {
   const width = `calc(100vw * ${(1 - shrinkP).toFixed(4)} + ${(240 * shrinkP).toFixed(2)}px)`
   const height = `calc(100svh * ${(1 - shrinkP).toFixed(4)} + ${(240 * shrinkP).toFixed(2)}px)`
   const borderRadius = `${(shrinkP * 28).toFixed(1)}px`
-  const translateY = -shrinkP * 180 + moveP * 60
+  
+  // Calcolo di translateY ridotto per mobile per prevenire lo scroll eccessivo verso l'alto,
+  // ma sufficiente a non far mai sovrapporre il video rimpicciolito al testo sottostante
+  const translateY = isMobile 
+    ? -shrinkP * 130 + moveP * 30
+    : -shrinkP * 180 + moveP * 60
 
-  const contentOpacity = clamp((p - 0.18) / 0.2)
-  const floatScale = clamp((p - 0.18) / 0.2)
+  // Su mobile il testo compare SOLO dopo che il video ha finito di rimpicciolirsi (shrinkP ~1 a p=0.22),
+  // evitando la sovrapposizione visibile durante il restringimento. Su desktop invariato.
+  const contentOpacity = isMobile ? clamp((p - 0.28) / 0.42) : clamp((p - 0.18) / 0.2)
+  const floatScale = isMobile ? contentOpacity : clamp((p - 0.18) / 0.2)
 
   const shown = Math.max(typed, Math.round(shrinkP * TOTAL))
   const shown1 = Math.min(shown, LINE1.length)
   const shown2 = Math.max(0, shown - LINE1.length)
 
   return (
-    <section id="hero" ref={ref} className="relative h-[220vh] bg-white">
+    <section id="hero" ref={ref} className="relative h-[150vh] md:h-[220vh] bg-white">
       <div className="sticky top-0 flex h-[100svh] w-full items-center justify-center overflow-hidden bg-white">
         
         <div
-          className="pointer-events-none absolute inset-0 z-30 flex flex-col items-start justify-center pb-[12vh] pl-[8vw] md:pl-[12vw]"
+          className="pointer-events-none absolute inset-0 z-30 flex flex-col items-start justify-center pb-[12vh] pl-[6vw] md:pl-[12vw] px-4"
           style={{ opacity: textOpacity }}
         >
-          <h1 className="text-left font-serif text-[10vw] leading-[0.92] tracking-[-0.02em] text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.3)] sm:text-7xl md:text-8xl lg:text-[7.5rem]">
+          <h1 className="text-left font-serif text-[11vw] sm:text-7xl md:text-8xl lg:text-[7.5rem] leading-[0.92] tracking-[-0.02em] text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.3)]">
             <span>
               <TypeLine text={LINE1} shown={shown1} />
             </span>
@@ -474,21 +476,22 @@ function IntegratedHero() {
           className="absolute z-10 max-w-3xl px-6 text-center transition-all duration-300"
           style={{
             opacity: contentOpacity,
-            transform: `translate3d(0, ${150 - moveP * 20}px, 0)`,
+            transform: `translate3d(0, ${isMobile ? 130 - moveP * 30 : 150 - moveP * 20}px, 0)`,
           }}
         >
-          <h2 className="font-serif text-3xl font-normal leading-snug tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
+          <h2 className="font-serif text-2xl font-normal leading-snug tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
             I nostri standard, la tua sicurezza.
           </h2>
-          <p className="mt-4 text-base font-normal leading-relaxed text-gray-600 sm:text-lg md:text-xl">
+          <p className="mt-2 md:mt-4 text-sm font-normal leading-relaxed text-gray-600 sm:text-lg md:text-xl">
             Soluzioni meccatroniche di precisione e tarature dima personalizzate per assicurarti il massimo controllo e prestazioni su ogni curva.
           </p>
         </div>
 
+        {/* Togliamo le carte fluttuanti su mobile con hidden md:block */}
         {FLOATING_CARDS.map((card) => (
           <div
             key={card.id}
-            className={`absolute z-10 overflow-hidden rounded-2xl shadow-xl transition-all duration-500 ${card.pos} ${card.size}`}
+            className={`hidden md:block absolute z-10 overflow-hidden rounded-2xl shadow-xl transition-all duration-500 ${card.pos} ${card.size}`}
             style={{
               opacity: contentOpacity,
               transform: `scale(${floatScale})`,
@@ -539,7 +542,8 @@ function Pillars() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!containerRef.current) return
+      // Disabilitato il cambio automatico da scroll su mobile per evitare scatti da solo
+      if (window.innerWidth < 768 || !containerRef.current) return
       
       const rect = containerRef.current.getBoundingClientRect()
       const totalHeight = rect.height - window.innerHeight
@@ -560,9 +564,9 @@ function Pillars() {
   }, [])
 
   return (
-    <section id="servizi" ref={containerRef} className="relative h-[300vh] bg-white">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden py-12">
-        <div className="mx-auto grid max-w-6xl w-full items-center gap-12 px-6 md:grid-cols-2">
+    <section id="servizi" ref={containerRef} className="relative md:h-[300vh] bg-white py-12 md:py-0">
+      <div className="md:sticky md:top-0 flex md:h-screen items-center overflow-hidden py-6 md:py-12">
+        <div className="mx-auto grid max-w-6xl w-full items-center gap-8 md:gap-12 px-6 md:grid-cols-2">
           <div>
             <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-xl">
               <div className="absolute inset-x-0 -top-[12%] h-[124%]">
@@ -581,14 +585,14 @@ function Pillars() {
 
           <div>
             {PILLARS.map((p, i) => (
-              <div key={p.key} className="border-b border-gray-100 py-5 first:pt-0">
+              <div key={p.key} className="border-b border-gray-100 py-4 md:py-5 first:pt-0">
                 <button
                   type="button"
                   onClick={() => setActive(i)}
                   className="block text-left cursor-pointer"
                 >
                   <span
-                    className={`font-serif text-4xl transition-colors duration-300 sm:text-5xl ${
+                    className={`font-serif text-3xl sm:text-4xl transition-colors duration-300 md:text-5xl ${
                       active === i ? "text-black" : "text-gray-300"
                     }`}
                   >
@@ -600,7 +604,7 @@ function Pillars() {
                   style={{ gridTemplateRows: active === i ? "1fr" : "0fr" }}
                 >
                   <div className="min-h-0">
-                    <p className="max-w-md pt-3 leading-relaxed text-gray-600">
+                    <p className="max-w-md pt-3 leading-relaxed text-gray-600 text-sm md:text-base">
                       {p.body}
                     </p>
                   </div>
@@ -693,12 +697,12 @@ const INSIGHTS = [
 
 function Insights() {
   return (
-    <section id="approfondimenti" className="bg-white py-24 sm:py-32">
+    <section id="approfondimenti" className="bg-white py-16 sm:py-32">
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <Reveal>
-              <h2 className="font-serif text-6xl tracking-tight text-black sm:text-7xl">
+              <h2 className="font-serif text-4xl sm:text-7xl tracking-tight text-black">
                 Approfondimenti.
               </h2>
             </Reveal>
@@ -710,7 +714,7 @@ function Insights() {
           </div>
         </div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 sm:mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {INSIGHTS.map((post, i) => (
             <Reveal key={post.title} delay={i * 0.08}>
               <Link href={`/approfondimenti/${post.slug}`} className="group block cursor-pointer">
@@ -863,10 +867,9 @@ export default function Page() {
       setActivePath(window.location.pathname === "/" ? "/home" : window.location.pathname)
     }
 
-    // Simula o gestisce l'inizializzazione dei componenti della pagina
     const timer = setTimeout(() => {
       setLoading(false)
-    }, 800) // Cambia o rimuovi il timer se usi chiamate API reali
+    }, 800)
 
     return () => clearTimeout(timer)
   }, [])
@@ -934,7 +937,6 @@ export default function Page() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [activePath, loading])
 
-  // Ritorna lo skeleton durante la fase di loading
   if (loading) {
     return <PageSkeleton />
   }
